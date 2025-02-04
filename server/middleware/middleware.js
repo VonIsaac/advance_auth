@@ -15,8 +15,11 @@ const authenticateToken = (req, res, next) => {
 
     try{
         const decoded = jwt.verify(token, process.env.JWT_SECRET); // Verify the token using the secret key
+        console.log(decoded);
         req.user = decoded; // Set the user to the decoded token
+        next(); // Move to the next middleware
     }catch(err){
+        console.log(err);
         return res.status(401).json({message: "Access denied"});
     }
 

@@ -5,6 +5,8 @@ import Page from './components/Page'
 import NewPassword from './components/UI/NewPassword'
 import GetEmail from './components/UI/GetEmail'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
+import { QueryClientProvider } from '@tanstack/react-query'
+import { queryClient } from './utils/http'
 export default function App() {
 
 
@@ -35,7 +37,9 @@ export default function App() {
 
   return (
    <div className='bg-gray-900'>
-      <RouterProvider router={router} />
+     <QueryClientProvider client={queryClient}>
+        <RouterProvider router={router} />
+     </QueryClientProvider>
    </div>
   )
 }
