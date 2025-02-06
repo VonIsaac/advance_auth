@@ -3,10 +3,12 @@ import Button from '@mui/material/Button';
 import { postSignup, queryClient } from "../utils/http";
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
-//use the useState hook to create a state variable for the form data
+import { useNavigate } from "react-router-dom";
+
 
 const SignUp = () => {
 
+   const navigate = useNavigate()
 
     const [formData, setFormData] = useState({
         email: "",
@@ -15,36 +17,47 @@ const SignUp = () => {
     });
 
     const formDatas = {
-        email: formData.email,
-        password: formData.password,
-        confirmPassword: formData.confirmPassword
-    }
+        email: formData.email || "",  // Ensure it’s never undefined
+        password: formData.password || "",
+        confirmPassword: formData.confirmPassword || ""
+   };
     
     const {mutate, isPending} = useMutation({
-    
         mutationFn: postSignup,
-        onSuccess: () => {
+        onSuccess: (data) => {
+            console.log(data)
+            navigate('../') // navigate to log in if succesfuly
             alert("Acount Created")
             queryClient.invalidateQueries("signup");
-            setFormData({ email: "", password: "", confirmPassword: "" }); // clear the form data after a successful sign up
+            setFormData({ email: "", password: "", confirmPassword: "" }); // clear the form data after a successful sign up  
         },
         onError: (error) => {
             alert("NOT CREATED!!!")
-            console.log(error);
+            console.error(error);
         }
     })
 
 
     const handleChange = (e) => {
-        setFormData({ formDatas, [e.target.name]: e.target.value }); // 
+        setFormData({
+            // spread the existing data and use object key 
+            ...formData, 
+            [e.target.name]: e.target.value  
+        }); // 
     };
 
     
     // create a function to handle the form data
     const handleSignUp = (e) => {
         e.preventDefault();
+        //check if password and confirm password did not match 
+        if(formData.password !== formData.confirmPassword){
+            alert('PASSWORD DID NOT MATCH') 
+            return
+        }
         // get the form data
         mutate(formDatas);
+
     }
     
 
@@ -60,6 +73,7 @@ const SignUp = () => {
                         name="email" 
                         value={formData.email} 
                         onChange={handleChange}
+                        
                     />
                </div>
 
@@ -71,6 +85,7 @@ const SignUp = () => {
                     name="password"
                     value={formData.password}
                     onChange={handleChange}
+                    
                    />
                </div>
 
@@ -83,6 +98,7 @@ const SignUp = () => {
                     name="confirmPassword" 
                     value={formData.confirmPassword}
                     onChange={handleChange}
+                    
                    />
                </div>
                <div  className="m-3 tracking-wide">

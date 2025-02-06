@@ -7,9 +7,11 @@ const mongoConnect = require('./utils/database') // Import the function to conne
 const app = express() // Create the Express app
 const cookieParser = require('cookie-parser') 
 const dotenv = require('dotenv') // Load environment variables from a .env file into process.env
+const cors = require('cors')
 
 // routes 
 const authRoutes = require('./routes/auth')
+const auhtMiddleware = require('./middleware/middleware')
 
 dotenv.config() 
 
@@ -27,6 +29,9 @@ app.use(express.static(path.join(__dirname, 'client/build')));
 app.use(express.json()); // Parses incoming JSON requests
 app.use(express.urlencoded({ extended: false })); // Parses form-urlencoded requests
 app.use(cookieParser()); // Parses cookies attached to the client request
+app.use(cors()) 
+
+
 
 // Connect to the database
 const PORT = process.env.PORT || 8000;
@@ -35,7 +40,7 @@ mongoConnect();
 
 // Use the routes
 app.use(authRoutes)
-
+app.use(auhtMiddleware) // authentication to all request 
 
 
 app.listen(PORT, () => {
