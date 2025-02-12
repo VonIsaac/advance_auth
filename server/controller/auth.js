@@ -2,7 +2,7 @@ const User = require('../models/User');
 const  bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv')
-
+const nodemailer = require('nodemailer')
 
 dotenv.config()
 // for signup form
@@ -93,11 +93,91 @@ exports.logIn = (req, res) => {
                 maxAge: 3600000 // 1 hour expiry
             });
 
-            res.json({ message: "Login successful" });
+            res.json({
+                    message: "Login successful",
+                    token: token,
+                    match: doMatch
+                });
         })
     })
     .catch(err => {
         console.error(err);
         res.status(500).json({ message: 'Server error' });
     });
+}
+
+// handle to remove cookie 
+
+exports.logout = (req, res) => {
+    res.cookie('token', {
+        httpOnly: true, 
+        expires: new Date(0) // Set expiration date to the past
+
+    });
+    res.status(200).json({ message: 'Logged out successfully' });
+}
+
+exports.postResetPassword = (req, res) => {
+    const {email} = req.body;
+
+    User.findOne({email})
+    .then(user => {
+        console.log(user)
+        //check if user email is did not available in database
+        if(!user){
+            return res.status(400).json({message: "User email not found"})
+        }
+
+        // set the token 
+        const token = jwt.sign(
+            {id: user.id}, // Payload is the data you want to encode into the token. 
+            process.env.JWT_SECRET, // secret key
+            {expiresIn: "1h"} // token expire in 1hr
+        )
+
+        // stored the token in model  and the tokenExpiration
+        user.resetToken = token
+        user.resetTokenExpiration  = Date.now() + 3600000; // 1 hour
+
+        return user.save() // save in our db
+    })
+    .then(result => {
+        
+        console.log(result.resetToken)
+         // create a nodemailer to send an email 
+         const transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+                user: process.env.EMAIL_USER,
+                pass: process.env.EMAIL_PASS
+            }
+         });
+        //Define Email Content
+        const mailOptions = {
+            from: process.env.EMAIL_USER,
+            to: email,
+            subject: "Password Reset",
+            text: `
+            Hello Gooday, To procced to the next page you must 
+            click this link to reset your password: http://localhost:3000/reset-password/${result.resetToken}
+            `,
+        };
+
+        return transporter.sendMail(mailOptions);
+    })
+    .then((token) => {
+        console.log(token)
+        if(!token){
+            return res.status(501).json({ message: "Email error" });
+        }
+        res.json({ message: "Check your email for the reset link", token: token});
+    })
+    .catch(err => {
+        console.log("Error:", err); // Log the actual error
+        res.status(500).json({message: 'Did not reset password'})
+    })
+}
+// handle to post new password 
+exports.postNewPassword = (req, res) => {
+// continue later...
 }

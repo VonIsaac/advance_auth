@@ -25,13 +25,13 @@ export default function App() {
     },
 
     {
-      path: '/new-password',
-      element: <NewPassword />
+      path: '/reset-email',
+      element: <GetEmail />
     },
 
     {
-      path: '/get-email',
-      element: <GetEmail />
+      path: '/new-password',
+      element: <NewPassword />
     }
   ])
 

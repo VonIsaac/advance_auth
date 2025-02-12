@@ -28,7 +28,7 @@ const SignUp = () => {
             console.log(data)
             navigate('../') // navigate to log in if succesfuly
             alert("Acount Created")
-            queryClient.invalidateQueries("signup");
+            queryClient.invalidateQueries({queryKey: ["signup"]});
             setFormData({ email: "", password: "", confirmPassword: "" }); // clear the form data after a successful sign up  
         },
         onError: (error) => {

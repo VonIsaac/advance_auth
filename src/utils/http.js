@@ -48,4 +48,29 @@ const postLogIn = async (credentials) => {
     }
 }
 
-export { postSignup, postLogIn };
+
+// handle to logout credentials and cookie
+const postLogout = async () => {
+    try{
+        const response = await API.post('/logout')
+        console.log(response)
+        Cookies.remove('token'); // Remove from client-side (if stored)
+
+    }catch(err){
+        console.log(err )
+    }
+}
+
+
+// handle to to recieve an email and to stored a resetToken
+const postResetPassword =  async (email) => {
+    try{
+        const response = await API.post('/reset-password', {email})
+        console.log(response.email.message)
+        return response
+    }catch(err) {
+        console.log('ERROR', err)
+    }
+}
+
+export { postSignup, postLogIn, postLogout, postResetPassword };

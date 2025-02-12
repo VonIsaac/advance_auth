@@ -29,7 +29,12 @@ app.use(express.static(path.join(__dirname, 'client/build')));
 app.use(express.json()); // Parses incoming JSON requests
 app.use(express.urlencoded({ extended: false })); // Parses form-urlencoded requests
 app.use(cookieParser()); // Parses cookies attached to the client request
-app.use(cors()) 
+app.use(cors({
+    origin: 'http://localhost:5173', // Specify the frontend origin
+    credentials: true, // Allow cookies and authentication headers
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 
 
@@ -38,9 +43,12 @@ const PORT = process.env.PORT || 8000;
 mongoConnect();
 
 
+
+
+//app.use(auhtMiddleware) // Authentication Middleware (Apply Before Protected Routes)
 // Use the routes
-app.use(authRoutes)
-app.use(auhtMiddleware) // authentication to all request 
+app.use(authRoutes) // available to all views
+
 
 
 app.listen(PORT, () => {
