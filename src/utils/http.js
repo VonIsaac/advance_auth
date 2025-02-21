@@ -67,10 +67,38 @@ const postResetPassword =  async (email) => {
     try{
         const response = await API.post('/reset-password', {email})
         console.log(response.email.message)
-        return response
+        return response.data
     }catch(err) {
         console.log('ERROR', err)
     }
 }
 
-export { postSignup, postLogIn, postLogout, postResetPassword };
+const getPassword = async (token) => {
+    try{
+        const response = await API.get(`/get-password/${token}`)
+        console.log(response)
+        return response.data
+    }catch(err){
+        console.log('ERROR', err)
+    }
+}
+
+const newPassword = async ({ password, token }) => { // Accept an object
+    try {
+        const response = await API.post('/new-password', { password, token });
+        console.log(response);
+        return response.data;
+    } catch (err) {
+        console.log('ERROR', err);
+        throw err;
+    }
+};
+
+export { 
+    postSignup, 
+    postLogIn, 
+    postLogout, 
+    postResetPassword ,
+    getPassword,
+     newPassword
+};

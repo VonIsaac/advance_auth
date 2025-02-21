@@ -9,7 +9,7 @@ dotenv.config();
 const authenticateToken  = async (req, res, next) => {
 
 
-    if (req.path === "/login" || req.path === "/signup") {
+    if (req.path === "/login" || req.path === "/signup") { // Check if the path is login or signup
         return next(); // Skip authentication for public routes
     }
 

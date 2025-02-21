@@ -3,6 +3,9 @@ import Cookies from "js-cookie";
 
 const API = axios.create({
     baseURL: "http://localhost:3000",
+    headers:{
+        "Content-Type": "application/json"
+    },
     withCredentials: true // Allows cookies to be sent
 });
 

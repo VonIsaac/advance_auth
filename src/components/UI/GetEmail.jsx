@@ -5,35 +5,46 @@ import { postResetPassword, queryClient } from "../../utils/http";
 import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+//import Cookies from "js-cookie";
 const GetEmail = () => {
     const navigate = useNavigate()
     const [resetEmail, isResetEmail] = useState("")
 
-
-    const {mutate, isPending} = useMutation({
+    //const resetToken = Cookies.get('token')
+    const { mutate, isPending } = useMutation({
         mutationFn: postResetPassword,
         onSuccess: (data) => {
-            console.log(data.message);
-            navigate('/new-password')
-            alert(`RESET PASSWORD SUCCESFULLY ${data.message}`)
-            queryClient.invalidateQueries({queryKey: ['reset-password']})
+            // Extract the token from the response
+            const resetToken = data.token; 
+    
+            if (!resetToken) {
+                alert("No token received. Please try again.");
+                return;
+            }
+            alert(`RESET PASSWORD SUCCESSFULLY: ${data.message}`);
+    
+            setTimeout(() => {
+                navigate(`/new-password/${resetToken}`);
+            }, 100);
+            
+            
+            queryClient.invalidateQueries({ queryKey: ['reset-email'] });
         },
         onError: (error) => {
-            console.log(Error)
-            alert(error.message);
-          },
-    })
-
+            console.log(error);
+        },
+    });
 
     const handleResetPassword = (e) => {
         e.preventDefault();
+       // navigate(`/new-password/${resetToken}`);
         mutate(resetEmail)
 
     }
 
     return(
         <ResetForm onSubmit = {handleResetPassword}>
-            <h1 className="text-center text-3xl my-8 font-bold tracking-wide">Reset Password</h1>
+            <h1 className="text-center text-3xl my-8 font-bold tracking-wide">Reset Email</h1>
             <div className="flex flex-col justify-center items-center m-2.5">
                 <div className="m-3">
                     <TextField 
@@ -44,6 +55,7 @@ const GetEmail = () => {
                         className="" 
                         value={resetEmail} 
                         onChange={e => isResetEmail(e.target.value)}
+                        required
                     />
                 </div>
                 <div  className="m-3">

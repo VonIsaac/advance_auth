@@ -30,7 +30,7 @@ export default function App() {
     },
 
     {
-      path: '/new-password',
+      path: '/new-password/:token',
       element: <NewPassword />
     }
   ])

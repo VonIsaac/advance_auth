@@ -130,8 +130,9 @@ const LogIn = () => {
                         action={action}
                     />
                 </div>
-                <p className="">
-                    Don&apos;t have an account? <Link to="/signup" className="text-blue-500">Sign In</Link>
+                <p className=" tracking-wide text-base/6">
+                    Enter your details to  <Link to ="/signup" className=" text-blue-700 font-semibold">sign </Link> 
+                     or <Link to= "/reset-email" className=" text-blue-700  font-semibold">recover</Link>
                 </p>
              </div>
              
