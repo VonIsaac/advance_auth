@@ -32,7 +32,8 @@ exports.signUp = (req, res) => {
             // Create a new user with the email and hashed password
             const newUser = new User({
                 email,
-                password: hashedPassword
+                password: hashedPassword,
+                role: "user"
             });
 
             return newUser.save(); // Save the user to the database
@@ -252,4 +253,14 @@ exports.postNewPassword = async (req, res) => {
         console.log("Error:", err);
         res.status(500).json({ message: "Did not reset password" });
     }
+}
+
+
+// for protected route
+exports.authAdmin  = (req, res, next) => {
+    res.json({ message: "Welcome Admin!" });
+}
+
+exports.authUser  = (req, res, next) => {
+    res.json({ message: "Welcome to the user dashboard!" });
 }

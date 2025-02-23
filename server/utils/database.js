@@ -1,19 +1,21 @@
-const mongoose = require('mongoose');   
-const dontenv = require('dotenv')// Load environment variables from a .env file into process.env
+// Load environment variables first
+require('dotenv').config();
 
-dontenv.config(); // Load environment variables from a .env file into process.env   
-
+const mongoose = require('mongoose');
 
 const MONGO_URI = process.env.MONGO_URI; // Get the URI from the environment variables
-// Connect to the MongoDB database
+
+// Debug: Log the URI to verify it's loaded correctly (remove in production)
+// console.log('Mongo URI:', MONGO_URI);
+
 const mongoConnect = () => {
     mongoose.connect(MONGO_URI)
     .then(() => {
         console.log('Connected to the database');
     })
     .catch((err) => {
-        console.log('Failed to connect to the database', err);
+        console.error('Failed to connect to the database', err);
     });
-}
+};
 
-module.exports = mongoConnect; // Export the function to connect to the database
+module.exports = mongoConnect;

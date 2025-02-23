@@ -9,9 +9,9 @@ dotenv.config();
 const authenticateToken  = async (req, res, next) => {
 
 
-    if (req.path === "/login" || req.path === "/signup") { // Check if the path is login or signup
+    /*if (req.path === "/login" || req.path === "/signup") { // Check if the path is login or signup
         return next(); // Skip authentication for public routes
-    }
+    }*/
 
     const token = req.header("Authorization")?.split(' ')[1]; // Get the token from the header
     // If the token is not present, return an error
@@ -33,6 +33,17 @@ const authenticateToken  = async (req, res, next) => {
         console.log("JWT verification failed:", err.message);
         return res.status(401).json({message: "Access denied"});
     }
+};
+
+// Role-based access control (RBAC)
+const authorize = (roles) => {
+    return (req, res, next) => {
+        // check if the user role is in the roles array
+        if(!roles.includes(req.user.role)){
+            return res.status(403).json({ message: "Forbidden: Access denied" });
+        }
+        next(); // Move to the next middleware
+    }
 }
 
-module.exports = authenticateToken;
+module.exports = { authenticateToken, authorize }; // Export the middleware functions

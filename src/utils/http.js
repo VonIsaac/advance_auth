@@ -44,7 +44,15 @@ const postLogIn = async (credentials) => {
         
     }catch(err){ 
         console.log(err);
-        return { success: false, message: err.response?.data?.message || "Login failed" };
+        //return { success: false, message: err.response?.data?.message || "Login failed" };
+        //check if credentials is invalid
+        if (err.response && err.response.data) {
+            alert("Invalid Credentials");
+            throw new Error(err.response.data.message || 'Login failed');
+            
+        }
+
+        throw err;
     }
 }
 

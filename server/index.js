@@ -11,7 +11,9 @@ const cors = require('cors')
 
 // routes 
 const authRoutes = require('./routes/auth')
-const auhtMiddleware = require('./middleware/middleware')
+
+//admin
+const {createAdminAccout} = require('./admin/admin')
 
 dotenv.config() 
 
@@ -43,9 +45,7 @@ const PORT = process.env.PORT || 8000;
 mongoConnect();
 
 
-
-
-//app.use(auhtMiddleware) // Authentication Middleware (Apply Before Protected Routes)
+createAdminAccout()
 // Use the routes
 app.use(authRoutes) // available to all views
 

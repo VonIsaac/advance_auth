@@ -28,15 +28,15 @@ const LogIn = () => {
     const {mutate, isPending} = useMutation({
         mutationFn: postLogIn,
         onSuccess: (data) => {
-            /*if(isCredentials.password || isCredentials.email){
-                alert("WRONG CREDENTIALS")
-            }*/
-            //check if wee enter valid credentials
-            if(data){
-                //navigate('/page')
+            if (data?.error) {
+                // Show an alert if credentials are incorrect
+                alert("Wrong credentials. Please try again.");
+               return // Open error dialog
+            } else if (data?.token) {
                 console.log("Token:", data);
-                queryClient.invalidateQueries({queryKey: ["login"]});
-                
+                queryClient.invalidateQueries({ queryKey: ["login"] });
+                setOpen(true); // Open success dialog'
+                return
             }
         },
         onError: (error) => {
@@ -49,7 +49,7 @@ const LogIn = () => {
     // handle the subimit
     const handleLogin = (e) => {
         e.preventDefault()
-        setOpen(true)   
+         
         mutate(formData)
     }   
 
