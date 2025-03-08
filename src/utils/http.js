@@ -2,7 +2,7 @@
 import { QueryClient } from "@tanstack/react-query";
 import API from "./API";
 import Cookies from "js-cookie";
-
+import {jwtDecode} from 'jwt-decode'
 export const queryClient = new QueryClient(); // create a new instance of the QueryClient
 
 
@@ -13,7 +13,7 @@ const postSignup = async (data) => {
         const response = await API.post('/signup', data);
         console.log(response);
      
-            alert("Account Created");
+            //alert("Account Created");
             return response.data;
        
     }catch(err){
@@ -30,7 +30,9 @@ const postSignup = async (data) => {
 const postLogIn = async (credentials) => {
     try{
         const response = await API.post("/login", credentials);
-    
+        if(response.ok){
+            console.log(response)
+        }
         const {token} = response.data;
         console.log(token)
         Cookies.set("token", token, { 
@@ -39,7 +41,17 @@ const postLogIn = async (credentials) => {
             sameSite: "Strict" 
         });
 
-        console.log(Cookies.get("token")); // Log token to verify it's stored
+
+        const decoded = jwtDecode(token); // use jwt-decode to decode the token
+        console.log(decoded); // Log the decoded token
+        // set the role 
+        Cookies.set('role', decoded.role,{
+            expires: 1 / 24,
+            secure: true,
+            sameSite: 'Strict'
+        })
+
+        console.log(Cookies.get("token")); // Log token to verify it's stored*/
         return token
         
     }catch(err){ 
@@ -47,7 +59,7 @@ const postLogIn = async (credentials) => {
         //return { success: false, message: err.response?.data?.message || "Login failed" };
         //check if credentials is invalid
         if (err.response && err.response.data) {
-            alert("Invalid Credentials");
+            //alert("Invalid Credentials");
             throw new Error(err.response.data.message || 'Login failed');
             
         }
@@ -98,9 +110,55 @@ const newPassword = async ({ password, token }) => { // Accept an object
         return response.data;
     } catch (err) {
         console.log('ERROR', err);
+        if (err.response && err.response.data) {
+            //alert("Invalid Credentials");
+            throw new Error(err.response.data.message || ' Change Password failed');
+        }
+
         throw err;
     }
 };
+
+
+// for fetch the admin and user
+
+const fetchAdmin = async () => {
+    try{
+        const response = await API.get('/admin')
+        console.log(response.data)
+    }catch(err){
+        console.log(err)
+    }
+}
+
+/*const fetchUser = async () => {
+    try {
+         const token = Cookies.get('token') // get the token 
+        const response = await API.get('/user', {
+            headers: {
+                Authorization: `Bearer ${token}` // Attach token to request
+            }
+        });
+        console.log(response.data);
+    } catch (err) {
+        console.log(err);
+        if (err.response && err.response.data) {
+            //alert("Invalid Credentials");
+            throw new Error(err.response.data.message || ' Change Password failed');
+        }
+
+        throw err;
+    }
+};*/
+
+const fetchUser = async () => {
+    try{
+        const response = await API.get('/fecth-user')
+        return response.data
+    }catch(err){
+        console.log(err)
+    }
+}
 
 export { 
     postSignup, 
@@ -108,5 +166,8 @@ export {
     postLogout, 
     postResetPassword ,
     getPassword,
-     newPassword
+    newPassword,
+    fetchAdmin,
+    fetchUser,
+
 };

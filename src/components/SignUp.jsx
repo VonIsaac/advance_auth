@@ -1,47 +1,36 @@
 import { TextField } from "@mui/material";
 import Button from '@mui/material/Button';
-import { postSignup, queryClient } from "../utils/http";
-import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
+
+import { useState, useContext } from "react";
+
 import { useNavigate } from "react-router-dom";
 import Snackbar from "@mui/material/Snackbar";
 import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
-
+import { AuthContext } from "./store/AuthProvider";
 import React from "react";
 const SignUp = () => {
-
+    const {signUpMutation } = useContext(AuthContext)
    const navigate = useNavigate()
     const [formData, setFormData] = useState({
+        username: "",
         email: "",
         password: "",
         confirmPassword: ""
     });
 
-    // handle snackbar 
-    const [openBar, setOpenBar] = useState(false)
-    // handle the snacbar text
-    const [snackbarMessage, setSnackbarMessage] = useState("")
+
     const formDatas = {
+        username: formData.username || "",
         email: formData.email || "",  // Ensure it’s never undefined
         password: formData.password || "",
         confirmPassword: formData.confirmPassword || ""
    };
-    
-    const {mutate, isPending} = useMutation({
-        mutationFn: postSignup,
-        onSuccess: (data) => {
-            console.log(data)
-            navigate('../') // navigate to log in if succesfuly
-            alert("Acount Created")
-            queryClient.invalidateQueries({queryKey: ["signup"]});
-            setFormData({ email: "", password: "", confirmPassword: "" }); // clear the form data after a successful sign up  
-        },
-        onError: (error) => {
-            alert("NOT CREATED!!!")
-            console.error(error);
-        }
-    })
+
+    // handle snackbar 
+    const [openBar, setOpenBar] = useState(false)
+    // handle the snacbar text
+    const [snackbarMessage, setSnackbarMessage] = useState("")
 
 
     const handleChange = (e) => {
@@ -68,7 +57,18 @@ const SignUp = () => {
             return
         }
         // get the form data
-        mutate(formDatas);
+         // Trigger mutation from context
+         signUpMutation.mutate(formDatas, {
+            onSuccess: () => {
+                navigate("../"); // Navigate to login page after success
+                alert("Account Created");
+                setFormData({ username: "", email: "", password: "", confirmPassword: "" }); // Clear form data
+            },
+            onError: (error) => {
+                alert("Account creation failed!");
+                console.error(error);
+            }
+        });
 
     }
     
@@ -104,9 +104,21 @@ const SignUp = () => {
                 action={action}
                 color="error"
             />
-        <form onSubmit={handleSignUp} action="" className="border-2 rounded-2xl border-none h-[400px] w-[350px] bg-white shadow-[rgba(13,_38,_76,_0.19)_0px_9px_20px]">
+        <form onSubmit={handleSignUp} action="" className="border-2 rounded-2xl border-none h-[500px] w-[350px] bg-white shadow-[rgba(13,_38,_76,_0.19)_0px_9px_20px]">
           <h1 className="text-center text-3xl my-8 font-bold tracking-wide">Sign Up</h1>
             <div className="flex flex-col justify-center items-center m-2.5">
+
+                <div className="m-3">
+                   <TextField 
+                        id="outlined-basic" 
+                        label="username" variant="outlined"
+                        name="username" 
+                        value={formData.username} 
+                        onChange={handleChange}
+                        required
+                    />
+               </div>
+
                <div className="m-3">
                    <TextField 
                         id="outlined-basic" 
@@ -144,7 +156,7 @@ const SignUp = () => {
                </div>
                <div  className="m-3 tracking-wide">
                     <Button variant="contained" type="submit" disableElevation> 
-                        {isPending ? "Signing in....": "Sign in"}
+                        {signUpMutation.isPending ? "Signing in....": "Sign in"}
                     </Button>
                </div>
             </div>

@@ -9,9 +9,9 @@ dotenv.config()
 
 
 exports.signUp = (req, res) => {
-    const { email, password } = req.body;
+    const {username, email, password } = req.body;
 
-    if (!email || !password) {
+    if (!username || !email || !password) {
         return res.status(400).json({ message: "All fields are required" });
     }
 
@@ -31,6 +31,7 @@ exports.signUp = (req, res) => {
             console.log(hashedPassword);
             // Create a new user with the email and hashed password
             const newUser = new User({
+                username,
                 email,
                 password: hashedPassword,
                 role: "user"
@@ -41,7 +42,7 @@ exports.signUp = (req, res) => {
         .then((result) => {
             console.log(`User created: ${result}`);
             res.status(201).json({ 
-                result: result,
+                result,
                 message: "User registered successfully" 
             });
         })
@@ -60,6 +61,7 @@ exports.logIn = (req, res) => {
     User.findOne({email: email})
     .then(user => {
         console.log(user)
+        console.log(`this is the ${user.role} role`)
         //check if the email credentials is wrong 
         if(!user){
             return  res.status(400).json({ 
@@ -82,7 +84,10 @@ exports.logIn = (req, res) => {
 
             // create a JWT TOKEN
             const token = jwt.sign(
-                {id: user.id}, // Payload is the data you want to encode into the token. 
+                {
+                    id: user.id,
+                    role: user.role // Add the user role to the token
+                }, // Payload is the data you want to encode into the token. 
                 process.env.JWT_SECRET, // secret key
                 {expiresIn: "1h"} // token expire in 1hr
             )
@@ -94,8 +99,9 @@ exports.logIn = (req, res) => {
                 maxAge: 3600000 // 1 hour expiry
             });
 
-            res.json({
+            res.status(200).json({
                     message: "Login successful",
+                    user: user,
                     token: token,
                     match: doMatch
                 });
@@ -103,18 +109,14 @@ exports.logIn = (req, res) => {
     })
     .catch(err => {
         console.error(err);
-        res.status(500).json({ message: 'Server error' });
+        res.status(500).json({ message: 'Login Failed' });
     });
 }
 
 // handle to remove cookie 
 
 exports.logout = (req, res) => {
-    res.cookie('token', {
-        httpOnly: true, 
-        expires: new Date(0) // Set expiration date to the past
-
-    });
+    res.clearCookie("token", { httpOnly: true, secure: true, sameSite: "None" });
     res.status(200).json({ message: 'Logged out successfully' });
 }
 
@@ -166,7 +168,7 @@ exports.postResetPassword = async (req, res) => {
             to: email,
             subject: "Password Reset",
             text: `
-            Hello Good Day, To proceed to the next page, you must 
+            Hello ${result.username} Good Day, To proceed to the next page, you must 
             click this link to reset your password: http://localhost:3000/get-password/${result.resetToken}
             `,
         };
@@ -256,11 +258,27 @@ exports.postNewPassword = async (req, res) => {
 }
 
 
-// for protected route
-exports.authAdmin  = (req, res, next) => {
-    res.json({ message: "Welcome Admin!" });
-}
+exports.getProtectedData = async (req, res) => {
+    const token = req.header("Authorization")?.split(' ')[1]; // Get the token from the header
+    // If the token is not present, return an error
+    if(!token){
+        return res.status(401).json({message: "Access denied"}); 
+    }
 
-exports.authUser  = (req, res, next) => {
-    res.json({ message: "Welcome to the user dashboard!" });
+    try{
+        const decoded = jwt.verify(token, process.env.JWT_SECRET); // Verify the token using the secret key
+        console.log(decoded);
+        const user = await User.findById(decoded.id).select("-password") // ensures the password is not included 
+        console.log(user)
+        if(!user){
+            return res.status(404).json({ message: "User not found" });
+        }
+        res.json(user)
+       // req.user = user; // Set the user to the decoded token
+        
+    }catch(err){ 
+        // If the token is invalid, return an error
+        console.log("JWT verification failed:", err.message);
+        return res.status(401).json({message: "Access denied", token: token , error: err.message, });
+    }
 }

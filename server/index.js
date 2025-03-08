@@ -45,7 +45,7 @@ const PORT = process.env.PORT || 8000;
 mongoConnect();
 
 
-createAdminAccout()
+createAdminAccout() // call the function to create an admin account
 // Use the routes
 app.use(authRoutes) // available to all views
 

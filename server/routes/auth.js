@@ -11,7 +11,8 @@ router.post('/logout', authController.logout)
 router.post('/reset-password', authController.postResetPassword);
 router.get('/get-password/:token', authController.getNewPassword) 
 router.post('/new-password', authController.postNewPassword)
+router.get('/fecth-user', authController.getProtectedData)
 // Protected Routes
-router.get('/admin', authenticateToken, authorize(['admin']), authController.authAdmin);
-router.get('/user', authenticateToken, authorize(['user']),  authController.authUser);
+//router.get('/admin', authenticateToken, authorize(['admin']), authController.authAdmin);
+//router.get('/user', authenticateToken, authorize(['user']),  authController.authUser);
 module.exports = router 

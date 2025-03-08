@@ -7,8 +7,10 @@ import IconButton from '@mui/material/IconButton';
 import MenuIcon from '@mui/icons-material/Menu';
 import Button from '@mui/material/Button';
 import { useMutation } from '@tanstack/react-query';
-import { postLogout, queryClient } from '../utils/http';
+import { postLogout, queryClient, fetchUser } from '../utils/http';
 import { useNavigate } from 'react-router-dom';
+//import { useEffect } from 'react';
+
 const Page = () => {
     const navigate = useNavigate()
     
@@ -24,6 +26,19 @@ const Page = () => {
     const handleLogout = ( ) => {
         mutate()
     }
+
+    // to fetch the user data
+    /*useEffect(() => {
+        const fetchUserDetails = async () => {
+            try{
+                const data = await fetchUser()
+                 console.log(data)
+            }catch(err){
+                console.log(err)
+            }
+        }
+        fetchUserDetails()
+    }, [])*/
      
 
     return (

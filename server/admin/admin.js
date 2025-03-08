@@ -23,12 +23,14 @@ async function createAdminAccout(){
             password: hashedPassword,
             role: 'admin'
         });
+        console.log(admin);
   
         await admin.save();
         console.log('Admin account created successfully: ', admin);
 
     }catch(error){
-        console.error('Error creating admin account:', error);
+        console.error('Error creating admin account:', error); 
+        
     }
 }
 
