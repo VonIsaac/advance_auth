@@ -3,7 +3,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { postLogIn,queryClient, postSignup, fetchUser } from "../../utils/http";
 import Cookies from "js-cookie";
 import { jwtDecode } from "jwt-decode";
-import { useNavigate } from "react-router-dom";
+
 const AuthContext = createContext();
 
 const AuthProvider = ({children}) => {
@@ -11,8 +11,8 @@ const AuthProvider = ({children}) => {
 
     // fetch user data if token exist 
     const {data: user } = useQuery({
-        queryKey: ["fetch-user"],
-        queryFn: () => fetchUser(token),
+        queryKey: ["user"],
+        queryFn: async () => fetchUser(token),
         enabled: !!token,// Fetch only if token exists
     })
 
@@ -28,13 +28,14 @@ const AuthProvider = ({children}) => {
     const logInMutation = useMutation({
         mutationFn: postLogIn,
         onSuccess: (data) => {
+            queryClient.invalidateQueries({queryKey: ['user']})
             console.log("Token:", data);
             const token = data;
-            const userDetails = jwtDecode(token); // Decode JWT token
+            const userDetails = jwtDecode(token); // Decode JWT token   
 
             // Store token and role in cookies
-            Cookies.set("token", token, { expires: 1 / 24, secure: true, sameSite: "Strict" });
-            Cookies.set("role", userDetails.role, { expires: 1 / 24, secure: true, sameSite: "Strict" });
+            Cookies.set("token", token, { expires: 1 / 24,  sameSite: "Strict" });
+            Cookies.set("role", userDetails.role, { expires: 1 / 24,  sameSite: "Strict" });
 
             // Set token state
             setToken(token);

@@ -8,7 +8,7 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClient } from './utils/http'
 import AdminPage from './components/AdminPages'
-//import ProtectedRoutes from './utils/ProtectedRoutes'
+import ProtectedRoutes from './utils/ProtectedRoutes'
 import AuthProvider from './components/store/AuthProvider'
 export default function App() {
 
@@ -24,7 +24,11 @@ export default function App() {
     },
     {
         path: '/page',
-        element: <Page />
+        element: (
+          <ProtectedRoutes requiredRole="user">
+            <Page />
+          </ProtectedRoutes>
+        )
     },
     {
         path: '/reset-email',
@@ -35,13 +39,13 @@ export default function App() {
         element: <NewPassword />
     },
     {
-        path: "/admin",
-        element: (
-            
-                <AdminPage />
-
-        ),
-    },
+      path: "/admin",
+      element: (
+          <ProtectedRoutes requiredRole="admin">
+              <AdminPage />
+          </ProtectedRoutes>
+      ),
+  },
 ]);
   return (
    <div className='bg-gray-900'>
