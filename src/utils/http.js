@@ -34,16 +34,17 @@ const postLogIn = async (credentials) => {
             console.log(response)
         }
         const {token} = response.data;
+        if (!token) throw new Error("No token received from server!");
         console.log(token)
         Cookies.set("token", token, { 
             expires: 1 / 24, // Expires in 1 hour, secure for HTTPS, and sameSite set to Strict
-            secure: true, 
             sameSite: "Strict" 
         });
 
 
         const decoded = jwtDecode(token); // use jwt-decode to decode the token
-        console.log(decoded); // Log the decoded token
+        console.log("Decoded Token:", decoded);
+
         // set the role 
         Cookies.set('role', decoded.role,{
             expires: 1 / 24,
@@ -51,7 +52,7 @@ const postLogIn = async (credentials) => {
             sameSite: 'Strict'
         })
 
-        console.log(Cookies.get("token")); // Log token to verify it's stored*/
+        Cookies.set('role', decoded.role, { expires: 1 / 24, sameSite: 'Strict' });
         return token
         
     }catch(err){ 
@@ -151,10 +152,14 @@ const fetchAdmin = async () => {
     }
 };*/
 
-const fetchUser = async () => {
+const fetchUser = async (token) => {
     try{
-        const response = await API.get('/fecth-user')
-        return response.data
+        const response = await API.get('/fetch-user', {
+            headers: { Authorization: `Bearer ${token}` },
+        } ) 
+        if (!response.ok) throw new Error('Failed to fetch user');
+            const data = await response.data
+            return data 
     }catch(err){
         console.log(err)
     }

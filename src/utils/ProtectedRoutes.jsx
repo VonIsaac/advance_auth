@@ -1,21 +1,27 @@
 import { Navigate, Outlet } from "react-router-dom";
-import Cookies from "js-cookie";
+import { useContext } from "react";
+import { AuthContext } from "../components/store/AuthProvider";
 
-const ProtectedRoutes = ({ requiredRole, }) => {
-    const token = Cookies.get("token");
-    const role = Cookies.get("role"); // Get the role from the cookie
+const ProtectedRoutes = ({ requiredRole, children }) => {
+    const {user} =  useContext(AuthContext)
 
-    // If no token, redirect to login page
-    if (!token) {
+    if(!user){
+        return <Navigate to='/' />
+    }
+
+
+    if(user.role && !requiredRole ){
+        return  <Navigate to='/' />
+    }
+
+    return children 
+
+    // Check if user has the required role
+    /*if (requiredRole && user.role !== requiredRole) {
         return <Navigate to="/" replace />;
-    }
+    };
 
-    
-    if (role !== requiredRole) { // check if the role is not equal to the required role
-        return <Navigate to="/" replace />;   // redirect to the login page
-    }
-
-    return  <Outlet context={ } /> // return the children
+    return user?  <Outlet />: <Navigate to='/' />*/
 };
 
 export default ProtectedRoutes;

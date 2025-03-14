@@ -66,9 +66,10 @@ exports.logIn = (req, res) => {
         if(!user){
             return  res.status(400).json({ 
                 message: "Email Credential are wrong" ,
-                users: user
+                
             });
         }
+        console.log(`this is the ${user.role} role`);
 
         // use bycypt to campare the password enter by user and password in DB
         return bcrypt.compare(password, user.password)
@@ -94,7 +95,7 @@ exports.logIn = (req, res) => {
              // Send token in HTTP-only cookie
              res.cookie("token", token, {
                 httpOnly: true, // Prevents JavaScript access
-                secure: false,
+                
                 sameSite: "Strict", // Prevents CSRF
                 maxAge: 3600000 // 1 hour expiry
             });
@@ -103,7 +104,8 @@ exports.logIn = (req, res) => {
                     message: "Login successful",
                     user: user,
                     token: token,
-                    match: doMatch
+                    match: doMatch,
+                    role: user.role
                 });
         })
     })
@@ -273,7 +275,7 @@ exports.getProtectedData = async (req, res) => {
         if(!user){
             return res.status(404).json({ message: "User not found" });
         }
-        res.json(user)
+        res.json({user, message: "Succesfuly token"})
        // req.user = user; // Set the user to the decoded token
         
     }catch(err){ 
@@ -282,3 +284,16 @@ exports.getProtectedData = async (req, res) => {
         return res.status(401).json({message: "Access denied", token: token , error: err.message, });
     }
 }
+
+
+
+exports.getAdminDashboard = async (req, res) => {
+    res.json({ msg: `Welcome to the Admin Dashboard: ${req.user.role}` });
+}
+
+/*
+exports.getUserDashboard = async (req, res) => {
+    res.json({ msg: `Welcome to the User Dashboard: ${req.user.role}` });
+}
+
+*/
