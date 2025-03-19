@@ -11,7 +11,7 @@ const API = axios.create({
 });
 
 // Add token to headers using Axios interceptors
-/*API.interceptors.request.use((config) => {
+API.interceptors.request.use((config) => {
     const token = Cookies.get('token') // get the token 
     console.log("Token being sent:", token); // Debugging
     // check if token in valid
@@ -20,6 +20,6 @@ const API = axios.create({
     }
 
     return config
-})*/
+})
 
 export default API;

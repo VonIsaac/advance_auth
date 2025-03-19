@@ -6,12 +6,25 @@ import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import MenuIcon from '@mui/icons-material/Menu';
 import Button from '@mui/material/Button';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { postLogout, queryClient } from '../utils/http';
 import { useNavigate } from 'react-router-dom';
+import { AuthContext } from './store/AuthProvider';
+import { useContext } from 'react';
+import { fetchAdmin } from '../utils/http';
+
 const AdminPage = () => {
     const navigate = useNavigate()
-    
+    const {token} = useContext(AuthContext)
+
+    const {data: admin} = useQuery({
+        queryKey: ['admin'], 
+        queryFn: () => fetchAdmin(token),
+        enabled: !!token, // Only fetch if token exists
+    }) 
+
+
+     
     const {mutate, isPending} = useMutation({
         mutationFn: postLogout, 
         onSuccess: (data) => {
@@ -29,7 +42,7 @@ const AdminPage = () => {
     return (
         <>
           <Box sx={{ flexGrow: 1 }}>
-                <AppBar position="static" >
+                <AppBar position="static" color='warning' >
                     <Toolbar variant="dense">
                         <IconButton edge="start" color="default" aria-label="menu" sx={{ mr: 2 }}>
                             <MenuIcon />
@@ -46,6 +59,9 @@ const AdminPage = () => {
                         <h1 className='text-5xl font-bold tracking-wider mb-2.5'>Welcome to the Admin Page&apos;s </h1>
                         <p className=' font-medium mb-2.5'>
                             This page is for admin pages, if wee log in the admin creadentials wee redirect in this page&apos;s.
+                        </p>
+                        <p>
+                            {admin?.msg}
                         </p>
                         <Button variant="contained" disableElevation onClick={handleLogout}>
                             {isPending ? 'Logging out...' : 'Logout Credentials'}
