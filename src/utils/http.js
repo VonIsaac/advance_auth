@@ -52,7 +52,6 @@ const postLogIn = async (credentials) => {
             sameSite: 'Strict'
         })
 
-        Cookies.set('role', decoded.role, { expires: 1 / 24, sameSite: 'Strict' });
         return token
         
     }catch(err){ 
@@ -123,14 +122,6 @@ const newPassword = async ({ password, token }) => { // Accept an object
 
 // for fetch the admin and user
 
-const fetchAdmin = async () => {
-    try{
-        const response = await API.get('/admin')
-        console.log(response.data)
-    }catch(err){
-        console.log(err)
-    }
-}
 
 /*const fetchUser = async () => {
     try {
@@ -153,6 +144,9 @@ const fetchAdmin = async () => {
 };*/
 
 const fetchUser = async (token) => {
+    if(!token){
+        return null
+    }
     try{
         const response = await API.get('/fetch-user', {
             headers: { Authorization: `Bearer ${token}` },
@@ -165,7 +159,20 @@ const fetchUser = async (token) => {
     }
 }
 
-export { 
+const fetchAdmin = async (token) => {
+    try{
+        const response = await API.get('/get-admin', {
+            headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!response.ok) throw new Error('Failed to fetch user');
+        const data = await response.data
+        return data 
+
+    }catch(err){
+        console.log(err)
+    }
+}
+export {  
     postSignup, 
     postLogIn, 
     postLogout, 

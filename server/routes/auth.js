@@ -11,7 +11,7 @@ router.post('/logout', authController.logout)
 router.post('/reset-password', authController.postResetPassword);
 router.get('/get-password/:token', authController.getNewPassword) 
 router.post('/new-password', authController.postNewPassword)
-router.get('/fetch-user', authenticateToken,   authController.getProtectedData);
+router.get('/fetch-user', authenticateToken, authorize(['user']),  authController.getProtectedData);
 router.get('/get-admin', authenticateToken, authorize(['admin']), authController.getAdminDashboard);
 //router.get('/get-users', authenticateToken, authorize(['user']), authController.getUserDashboard);
 // Protected Routes

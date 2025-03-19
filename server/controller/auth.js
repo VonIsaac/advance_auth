@@ -285,8 +285,6 @@ exports.getProtectedData = async (req, res) => {
     }
 }
 
-
-
 exports.getAdminDashboard = async (req, res) => {
     res.json({ msg: `Welcome to the Admin Dashboard: ${req.user.role}` });
 }

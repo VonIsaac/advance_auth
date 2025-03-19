@@ -36,4 +36,4 @@ const authorize = (requiredRoles) => {
     }
 }
 
-module.exports = { authenticateToken, authorize }; // Export the middleware functions
+module.exports = { authenticateToken, authorize }; 
