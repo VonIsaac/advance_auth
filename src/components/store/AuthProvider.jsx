@@ -10,12 +10,16 @@ const AuthProvider = ({children}) => {
     const [token, setToken] = useState(Cookies.get("token")) // for handling Cookie
 
     // fetch user data if token exist 
-    const {data: user } = useQuery({
-        queryKey: ["user"],
-        queryFn: async () => fetchUser(token),
-        enabled: !!token,// Fetch only if token exists
-    })
-
+    const { data: user, } = useQuery({
+        queryKey: ['user'],
+        queryFn: () => fetchUser(token), // Fetch user data using the token
+        enabled: !!token, // Only run the query if token exists
+        onError: () => {
+         Cookies.remove('token')
+         queryClient.setQueryData(['user'], null);
+        }
+ 
+     });
     // Mutation for sign-up
     const signUpMutation = useMutation({
         mutationFn: postSignup,
@@ -25,38 +29,42 @@ const AuthProvider = ({children}) => {
     });
 
     //Loggin Mutation (Moved from Login component)
-    const logInMutation = useMutation({
-        mutationFn: postLogIn,
-        onSuccess: (data) => {
-            queryClient.invalidateQueries({queryKey: ['user']})
-            console.log("Token:", data);
-            const token = data;
-            const userDetails = jwtDecode(token); // Decode JWT token   
-
-            // Store token and role in cookies
-            Cookies.set("token", token, { expires: 1 / 24,  sameSite: "Strict" });
-            Cookies.set("role", userDetails.role, { expires: 1 / 24,  sameSite: "Strict" });
-
-            // Set token state
-            setToken(token);
-
-            // Redirect based on role
-            if (userDetails.role === "user") {
-                window.location.href = "/page";
-            } else if (userDetails.role === "admin") {
-                window.location.href = "/admin";
-            } else {
-                window.location.href = "/";
-            }
-        },
-        onError: (error) => {
-            alert("Invalid Credentials");
-            console.error(error);
+   //Loggin Mutation (Moved from Login component)
+   const logInMutation = useMutation({
+    mutationFn: postLogIn,
+    onSuccess: async (data) => {
+       
+        console.log("Token:", data);
+        const token = data;
+        const userRoles = jwtDecode(token); // Decode JWT token   
+        if(userRoles.role === 'user'){
+            window.location.href = '/page'
+        }else{
+            window.location.href = '/admin'
         }
-    });
+        
+        setToken(token);
+        
+        await queryClient.invalidateQueries({ queryKey: ["user"] }); // Ensure user fetches again
+        
+        // Store token and role in cookies
+        //Cookies.set("token", token, );
+        //Cookies.set("role", userDetails.role);
+
+        // Set token state 
+          // Redirect user based on role
+          //  window.location.href = userDetails.role === "user" ? "/page" : "/admin";
+    },
+    onError: (error) => {
+        alert("Invalid Credentials");
+        console.error(error);
+    }
+});
+
+
 
     return(
-        <AuthContext.Provider value={{user, signUpMutation, logInMutation}}>
+        <AuthContext.Provider value={{user, token,  signUpMutation, logInMutation}}>
             {children}
         </AuthContext.Provider>
     )

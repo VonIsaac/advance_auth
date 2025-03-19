@@ -30,9 +30,7 @@ const postSignup = async (data) => {
 const postLogIn = async (credentials) => {
     try{
         const response = await API.post("/login", credentials);
-        if(response.ok){
-            console.log(response)
-        }
+        console.log(response.data);
         const {token} = response.data;
         if (!token) throw new Error("No token received from server!");
         console.log(token)
@@ -51,9 +49,7 @@ const postLogIn = async (credentials) => {
             secure: true,
             sameSite: 'Strict'
         })
-
-        Cookies.set('role', decoded.role, { expires: 1 / 24, sameSite: 'Strict' });
-        return token
+        return { user: decoded, token }; // ✅ Return user & token
         
     }catch(err){ 
         console.log(err);
@@ -152,12 +148,9 @@ const fetchAdmin = async () => {
     }
 };*/
 
-const fetchUser = async (token) => {
+const fetchUser = async () => {
     try{
-        const response = await API.get('/fetch-user', {
-            headers: { Authorization: `Bearer ${token}` },
-        } ) 
-        if (!response.ok) throw new Error('Failed to fetch user');
+        const response = await API.get('/fetch-user') 
             const data = await response.data
             return data 
     }catch(err){
