@@ -17,40 +17,38 @@ const {createAdminAccout} = require('./admin/admin')
 
 dotenv.config() 
 
-// Serve the static files from the React app
-app.use((req, res, next) => {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-    next();
-});
-
-
-// An api endpoint that returns a short list of items
-app.use(express.static(path.join(__dirname, 'client/build')));
-app.use(express.json()); // Parses incoming JSON requests
-app.use(express.urlencoded({ extended: false })); // Parses form-urlencoded requests
-app.use(cookieParser()); // Parses cookies attached to the client request
+// CORS configuration
 app.use(cors({
-    origin: 'http://localhost:5173', // Specify the frontend origin
-    credentials: true, // Allow cookies and authentication headers
+    origin: 'http://localhost:5173', // Your frontend URL
+    credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
+// Middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+app.use(cookieParser());
 
+// Serve static files
+app.use(express.static(path.join(__dirname, 'client/build')));
 
 // Connect to the database
-const PORT = process.env.PORT || 8000;
+const PORT = process.env.PORT ;
 mongoConnect();
 
+// Create admin account
+createAdminAccout();
 
-createAdminAccout() // call the function to create an admin account
-// Use the routes
-app.use(authRoutes) // available to all views
+// Use routes
+app.use(authRoutes);
 
-
+// Error handling middleware
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).json({ message: 'Something went wrong!' });
+});
 
 app.listen(PORT, () => {
     console.log(`Server started on port ${PORT}`);
-})
+});

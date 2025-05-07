@@ -6,12 +6,21 @@ import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import MenuIcon from '@mui/icons-material/Menu';
 import Button from '@mui/material/Button';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { postLogout, queryClient } from '../utils/http';
 import { useNavigate } from 'react-router-dom';
+
+import { useContext } from 'react';
+import { fetchAdmin } from '../utils/http';
+
 const AdminPage = () => {
     const navigate = useNavigate()
+  
+
     
+
+
+     
     const {mutate, isPending} = useMutation({
         mutationFn: postLogout, 
         onSuccess: (data) => {
@@ -29,7 +38,7 @@ const AdminPage = () => {
     return (
         <>
           <Box sx={{ flexGrow: 1 }}>
-                <AppBar position="static" >
+                <AppBar position="static" color='warning' >
                     <Toolbar variant="dense">
                         <IconButton edge="start" color="default" aria-label="menu" sx={{ mr: 2 }}>
                             <MenuIcon />
@@ -47,6 +56,7 @@ const AdminPage = () => {
                         <p className=' font-medium mb-2.5'>
                             This page is for admin pages, if wee log in the admin creadentials wee redirect in this page&apos;s.
                         </p>
+                     
                         <Button variant="contained" disableElevation onClick={handleLogout}>
                             {isPending ? 'Logging out...' : 'Logout Credentials'}
                         </Button>

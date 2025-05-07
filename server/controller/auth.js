@@ -3,7 +3,7 @@ const  bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv')
 const nodemailer = require('nodemailer')
-const crypto = require('crypto')
+//const crypto = require('crypto')
 dotenv.config()
 // for signup form
 
@@ -260,40 +260,96 @@ exports.postNewPassword = async (req, res) => {
 }
 
 
-exports.getProtectedData = async (req, res) => {
-    const token = req.header("Authorization")?.split(' ')[1]; // Get the token from the header
-    // If the token is not present, return an error
-    if(!token){
-        return res.status(401).json({message: "Access denied"}); 
-    }
 
-    try{
-        const decoded = jwt.verify(token, process.env.JWT_SECRET); // Verify the token using the secret key
-        console.log(decoded);
-        const user = await User.findById(decoded.id).select("-password") // ensures the password is not included 
-        console.log(user)
-        if(!user){
+exports.getMe = async (req, res) => { // ths function is for getting the user and admin data
+    try {
+        const user = await User.findById(req.user.id); // this is Model for getting the user data from the database
+        
+        if(!user) {
             return res.status(404).json({ message: "User not found" });
         }
-        res.json({user, message: "Succesfuly token"})
-       // req.user = user; // Set the user to the decoded token
         
-    }catch(err){ 
-        // If the token is invalid, return an error
-        console.log("JWT verification failed:", err.message);
-        return res.status(401).json({message: "Access denied", token: token , error: err.message, });
+        res.status(200).json({
+            success: true,
+            data: {
+                id: user._id,
+                username: user.username,
+                email: user.email,
+                role: user.role,
+                createdAt: user.createdAt,
+                updatedAt: user.updatedAt
+            },
+            message: "User data fetched successfully"
+        });
+    } catch(err) {
+        console.log("Error:", err);
+        res.status(500).json({
+            success: false,
+            message: 'Server error',
+            error: err.message
+        });
+    }
+};
+
+// perform  protected route for admin and user functionality
+
+exports.userDashboard = async (req, res) => {
+    try {
+        // Fetch the full user from database to ensure we have all data
+        const user = await User.findById(req.user.id);
+        
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found"
+            });
+        }
+        
+        // Return data with consistent structure matching getMe
+        res.status(200).json({
+            success: true,
+            message: "User dashboard loaded successfully",
+            data: {
+                id: user._id,
+                username: user.username,
+                email: user.email,
+                role: user.role,
+                createdAt: user.createdAt,
+                updatedAt: user.updatedAt
+            },
+            recentActivity: [
+                { type: 'login', date: new Date() }
+            ]
+        });
+    } catch(err) {
+        console.log("Error:", err);
+        res.status(500).json({ 
+            success: false,
+            message: "Failed to load user dashboard",
+            error: err.message 
+        });
+    }
+ };
+
+ 
+exports.adminDashboard = async (req, res) => {
+    try{
+        res.status(200).json({
+            success: true,
+            message: "Admin dashboard",
+            user:{
+                id: req.user.id,
+                username: req.user.username,
+                email: req.user.email,
+                role: req.user.role
+            },
+            recentActivity: [
+                { type: 'login', date: new Date() }
+                
+            ],
+        })
+    }catch(err){
+        console.log("Error:", err);
+        res.status(500).json({ message: " Admin Token Needed" });
     }
 }
-
-
-
-exports.getAdminDashboard = async (req, res) => {
-    res.json({ msg: `Welcome to the Admin Dashboard: ${req.user.role}` });
-}
-
-/*
-exports.getUserDashboard = async (req, res) => {
-    res.json({ msg: `Welcome to the User Dashboard: ${req.user.role}` });
-}
-
-*/
