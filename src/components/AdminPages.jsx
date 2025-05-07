@@ -9,19 +9,15 @@ import Button from '@mui/material/Button';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { postLogout, queryClient } from '../utils/http';
 import { useNavigate } from 'react-router-dom';
-import { AuthContext } from './store/AuthProvider';
+
 import { useContext } from 'react';
 import { fetchAdmin } from '../utils/http';
 
 const AdminPage = () => {
     const navigate = useNavigate()
-    const {token} = useContext(AuthContext)
+  
 
-    const {data: admin} = useQuery({
-        queryKey: ['admin'], 
-        queryFn: () => fetchAdmin(token),
-        enabled: !!token, // Only fetch if token exists
-    }) 
+    
 
 
      
@@ -60,9 +56,7 @@ const AdminPage = () => {
                         <p className=' font-medium mb-2.5'>
                             This page is for admin pages, if wee log in the admin creadentials wee redirect in this page&apos;s.
                         </p>
-                        <p>
-                            {admin?.msg}
-                        </p>
+                     
                         <Button variant="contained" disableElevation onClick={handleLogout}>
                             {isPending ? 'Logging out...' : 'Logout Credentials'}
                         </Button>

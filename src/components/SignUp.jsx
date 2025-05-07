@@ -7,10 +7,11 @@ import { useNavigate } from "react-router-dom";
 import Snackbar from "@mui/material/Snackbar";
 import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
-import { AuthContext } from "./store/AuthProvider";
+import { useAuth } from "./store/AuthProvider";
 import React from "react";
+
 const SignUp = () => {
-    const {signUpMutation } = useContext(AuthContext)
+    const { signUpMutation} = useAuth()
    const navigate = useNavigate()
     const [formData, setFormData] = useState({
         username: "",

@@ -21,7 +21,7 @@ async function createAdminAccout(){
         const admin = new User({
             email: 'admin@gmail.com',
             password: hashedPassword,
-            role: 'admin'
+            role: 'admin' // deafault role for admin
         });
         console.log(admin);
   

@@ -4,7 +4,8 @@ import SignUp from './components/SignUp'
 import Page from './components/Page'
 import NewPassword from './components/UI/NewPassword'
 import GetEmail from './components/UI/GetEmail'
-import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom'
+
+import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClient } from './utils/http'
 import AdminPage from './components/AdminPages'
@@ -12,20 +13,7 @@ import ProtectedRoutes from './utils/ProtectedRoutes'
 import AuthProvider from './components/store/AuthProvider'
 //import LandingPage from './components/LandingPage'
 
-
-export default function App() {
-
-
-  const router = createBrowserRouter([
-    /*{
-      path: '/',
-      element: <Navigate to={'/landingpage'} /> 
-    },
-
-    { 
-      path: '/landingpage',
-      element: <LandingPage />
-    },*/
+const router = createBrowserRouter([
     { 
       path: '/', 
       element: <LogIn /> 
@@ -37,32 +25,33 @@ export default function App() {
     {
         path: '/page',
         element: (
-           <ProtectedRoutes roles={["user"]}>
-                <Page />
-            </ProtectedRoutes>
+          //<ProtectedRoutes  requiredRole="user">
+              <Page />
+          //</ProtectedRoutes>  
         ),
     },
     { 
       path: '/reset-email',
       element: <GetEmail /> 
     },
-
     { path: '/new-password/:token', element: <NewPassword /> },
     {
       path: "/admin",
       element: (
-        <ProtectedRoutes roles={["admin"]}>
+        <ProtectedRoutes requiredRole="admin">
             <AdminPage />
         </ProtectedRoutes>
       ),
     },
 ]);
+
+export default function App() {
   return (
    <div className='bg-gray-900'>
      <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <RouterProvider router={router} />
-      </AuthProvider>
+        <AuthProvider>
+          <RouterProvider router={router} />
+        </AuthProvider>
      </QueryClientProvider>
    </div>
   )

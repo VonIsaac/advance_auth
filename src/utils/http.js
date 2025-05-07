@@ -28,43 +28,46 @@ const postSignup = async (data) => {
 
 
 const postLogIn = async (credentials) => {
-    try{
+    try {
         const response = await API.post("/login", credentials);
-        console.log(response.data);
-        const {token} = response.data;
-        if (!token) throw new Error("No token received from server!");
-        console.log(token)
-        Cookies.set("token", token, { 
-            expires: 1 / 24, // Expires in 1 hour, secure for HTTPS, and sameSite set to Strict
-            sameSite: "Strict" 
+        console.log("Login response:", response.data);
+        
+        const token = response.data.token; // Make sure this matches your API response structure
+        
+        if (!token) {
+            throw new Error("No token received from server!");
+        }
+        
+        // Store token in cookie
+        Cookies.set("token", token, {
+            expires: 1 / 24, // Expires in 1 hour
+            sameSite: "Strict"
         });
-
-
-        const decoded = jwtDecode(token); // use jwt-decode to decode the token
+        
+        // Decode token to get user info
+        const decoded = jwtDecode(token);
         console.log("Decoded Token:", decoded);
-
-        // set the role 
-        Cookies.set('role', decoded.role,{
+        
+        // Set role cookie
+        Cookies.set('role', decoded.role, {
             expires: 1 / 24,
             secure: true,
             sameSite: 'Strict'
-        })
-        return { user: decoded, token }; // ✅ Return user & token
+        });
         
-    }catch(err){ 
-        console.log(err);
-        //return { success: false, message: err.response?.data?.message || "Login failed" };
-        //check if credentials is invalid
+        // Return object with token property
+        return { token };
+        
+    } catch (err) {
+        console.error("Login error:", err);
+        
         if (err.response && err.response.data) {
-            //alert("Invalid Credentials");
             throw new Error(err.response.data.message || 'Login failed');
-            
         }
-
+        
         throw err;
     }
 }
-
 
 // handle to logout credentials and cookie
 const postLogout = async () => {
@@ -72,6 +75,7 @@ const postLogout = async () => {
         const response = await API.post('/logout')
         console.log(response)
         Cookies.remove('token'); // Remove from client-side (if stored)
+        Cookies.remove('role'); // Remove role cookie
 
     }catch(err){
         console.log(err )
@@ -116,43 +120,38 @@ const newPassword = async ({ password, token }) => { // Accept an object
     }
 };
 
+// gettting the data to both user and admin
+ const getAdminAndUser = async () => {
+    try {
+      const response = await API.get('/me');
+      console.log("User data:", response.data);
+      return response.data;
+    } catch (err) {
+      console.error("Error fetching user data:", err);
+      throw err;
+    }
+  };
+  
 
-// for fetch the admin and user
+
+// getting the user data and admin data
+ const fetchUser = async () => {
+    try {
+      const response = await API.get('/user-dashboard');
+      console.log("User dashboard data:", response.data);
+      return response.data;
+    } catch (err) {
+      console.error("Error fetching user dashboard:", err);
+      throw err;
+    }
+  };
 
 const fetchAdmin = async () => {
     try{
-        const response = await API.get('/admin')
-        console.log(response.data)
-    }catch(err){
-        console.log(err)
-    }
-}
-
-/*const fetchUser = async () => {
-    try {
-         const token = Cookies.get('token') // get the token 
-        const response = await API.get('/user', {
-            headers: {
-                Authorization: `Bearer ${token}` // Attach token to request
-            }
-        });
+        const response = await API.get('/admin-dashboard');
         console.log(response.data);
-    } catch (err) {
-        console.log(err);
-        if (err.response && err.response.data) {
-            //alert("Invalid Credentials");
-            throw new Error(err.response.data.message || ' Change Password failed');
-        }
+        return response.data; // Return the admin data
 
-        throw err;
-    }
-};*/
-
-const fetchUser = async () => {
-    try{
-        const response = await API.get('/fetch-user') 
-            const data = await response.data
-            return data 
     }catch(err){
         console.log(err)
     }
@@ -167,5 +166,5 @@ export {
     newPassword,
     fetchAdmin,
     fetchUser,
-
+    getAdminAndUser
 };

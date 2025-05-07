@@ -3,23 +3,39 @@ import Cookies from "js-cookie";
 
 const API = axios.create({
     baseURL: "http://localhost:3000",
-    headers:{
+    headers: {
         "Content-Type": "application/json",
-        
     },
     withCredentials: true // Allows cookies to be sent
 });
 
-// Add token to headers using Axios interceptors
-API.interceptors.request.use((config) => {
-    const token = Cookies.get('token') // get the token 
-    console.log("Token being sent:", token); // Debugging
-    // check if token in valid
-    if(token){
-        config.headers.Authorization = `Bearer ${token}`;
+// Request interceptor
+API.interceptors.request.use(
+    (config) => {
+        const token = Cookies.get('token');
+        console.log("Token being sent:", token);
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+    },
+    (error) => {
+        console.error("Request error:", error);
+        return Promise.reject(error);
     }
+);
 
-    return config
-})
+// Response interceptor
+API.interceptors.response.use(
+    (response) => {
+        return response;
+    },
+    (error) => {
+        if (error.code === 'ERR_NETWORK') {
+            console.error("Network error - Is the server running?");
+        }
+        return Promise.reject(error);
+    }
+);
 
 export default API;
