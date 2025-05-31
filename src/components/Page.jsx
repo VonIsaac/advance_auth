@@ -7,19 +7,30 @@ import IconButton from '@mui/material/IconButton';
 import MenuIcon from '@mui/icons-material/Menu';
 import Button from '@mui/material/Button';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { postLogout, fetchUser, queryClient} from '../utils/http';
+import { postLogout,  getAdminAndUser, queryClient} from '../utils/http';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from './store/AuthProvider';
-import { useEffect } from 'react';
+import Cookies from 'js-cookie';
+//import { useEffect } from 'react';
 //import { useEffect } from 'react';
 
 const Page = () => {
-    const {user} = useAuth();
+    const { token} = useAuth();
+    const userCreds = useQuery({
+        queryFn: () => getAdminAndUser({ token}),
+        queryKey: ['get-user', token],
+     
+    })
+
+    const userCredentials = userCreds?.data
+
     const navigate = useNavigate()
     const {mutate, isPending} = useMutation({
         mutationFn: postLogout, 
         onSuccess: (data) => {
             queryClient.invalidateQueries('logout')
+            Cookies.remove('token'); // Remove token from cookies
+           // localStorage.clear(); 
             console.log(data)
             navigate('../')
         }
@@ -50,13 +61,13 @@ const Page = () => {
                 <div className=' p-5 rounded-sm'>
                     <div className=' text-center tracking-wide text-base/6'>
                         <h1 className='text-5xl font-bold tracking-wider mb-2.5'>
-                            Welcome to the User&apos;s Page: {user.username}  
+                            Welcome to the User&apos;s Page: {userCredentials?.username} 
                         </h1>
                         <p className=' font-medium mb-2.5'>
                             This page is for user pages, if wee log in the users creadentials wee redirect in this page&apos;s.
                         </p>
                         <p className="font-medium mb-2.5">
-                            Role:{user.role}
+                            Role:{userCredentials?.role}
                         </p>
                         <Button variant="contained" disableElevation onClick={handleLogout}>
                             {isPending ? 'Logging out...' : 'Logout Credentials'}

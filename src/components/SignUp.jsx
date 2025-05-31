@@ -1,17 +1,18 @@
 import { TextField } from "@mui/material";
 import Button from '@mui/material/Button';
 
-import { useState, useContext } from "react";
+import { useState } from "react";
 
 import { useNavigate } from "react-router-dom";
 import Snackbar from "@mui/material/Snackbar";
 import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
-import { useAuth } from "./store/AuthProvider";
+import { useMutation } from "@tanstack/react-query"; 
+import { postSignup, queryClient } from "../utils/http";
 import React from "react";
 
 const SignUp = () => {
-    const { signUpMutation} = useAuth()
+    
    const navigate = useNavigate()
     const [formData, setFormData] = useState({
         username: "",
@@ -34,6 +35,20 @@ const SignUp = () => {
     const [snackbarMessage, setSnackbarMessage] = useState("")
 
 
+   const {mutate, isPending} = useMutation({
+        mutationFn: postSignup,
+        onSuccess: () => {
+            queryClient.invalidateQueries(['get-user']);
+            navigate("../"); // Navigate to login page after success
+            alert("Account Created");
+            setFormData({ username: "", email: "", password: "", confirmPassword: "" }); // Clear form data
+        },
+        onError: (error) => {
+            alert("Account creation failed!");
+            console.error(error);
+        }
+   })
+
     const handleChange = (e) => {
         setFormData({
             // spread the existing data and use object key 
@@ -46,6 +61,7 @@ const SignUp = () => {
     // create a function to handle the form data
     const handleSignUp = (e) => {
         e.preventDefault();
+        mutate(formDatas);
         //check if email is a valid gmail address and password are match
         const gmailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
         if (!gmailRegex.test(formData.email)) {
@@ -57,19 +73,8 @@ const SignUp = () => {
             setOpenBar(true) 
             return
         }
-        // get the form data
-         // Trigger mutation from context
-         signUpMutation.mutate(formDatas, {
-            onSuccess: () => {
-                navigate("../"); // Navigate to login page after success
-                alert("Account Created");
-                setFormData({ username: "", email: "", password: "", confirmPassword: "" }); // Clear form data
-            },
-            onError: (error) => {
-                alert("Account creation failed!");
-                console.error(error);
-            }
-        });
+       
+        
 
     }
     
@@ -157,7 +162,7 @@ const SignUp = () => {
                </div>
                <div  className="m-3 tracking-wide">
                     <Button variant="contained" type="submit" disableElevation> 
-                        {signUpMutation.isPending ? "Signing in....": "Sign in"}
+                        {isPending ? "Signing in....": "Sign in"}
                     </Button>
                </div>
             </div>

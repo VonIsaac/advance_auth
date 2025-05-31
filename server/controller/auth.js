@@ -261,6 +261,7 @@ exports.postNewPassword = async (req, res) => {
 
 
 
+
 exports.getMe = async (req, res) => { // ths function is for getting the user and admin data
     try {
         const user = await User.findById(req.user.id); // this is Model for getting the user data from the database
@@ -291,65 +292,3 @@ exports.getMe = async (req, res) => { // ths function is for getting the user an
     }
 };
 
-// perform  protected route for admin and user functionality
-
-exports.userDashboard = async (req, res) => {
-    try {
-        // Fetch the full user from database to ensure we have all data
-        const user = await User.findById(req.user.id);
-        
-        if (!user) {
-            return res.status(404).json({
-                success: false,
-                message: "User not found"
-            });
-        }
-        
-        // Return data with consistent structure matching getMe
-        res.status(200).json({
-            success: true,
-            message: "User dashboard loaded successfully",
-            data: {
-                id: user._id,
-                username: user.username,
-                email: user.email,
-                role: user.role,
-                createdAt: user.createdAt,
-                updatedAt: user.updatedAt
-            },
-            recentActivity: [
-                { type: 'login', date: new Date() }
-            ]
-        });
-    } catch(err) {
-        console.log("Error:", err);
-        res.status(500).json({ 
-            success: false,
-            message: "Failed to load user dashboard",
-            error: err.message 
-        });
-    }
- };
-
- 
-exports.adminDashboard = async (req, res) => {
-    try{
-        res.status(200).json({
-            success: true,
-            message: "Admin dashboard",
-            user:{
-                id: req.user.id,
-                username: req.user.username,
-                email: req.user.email,
-                role: req.user.role
-            },
-            recentActivity: [
-                { type: 'login', date: new Date() }
-                
-            ],
-        })
-    }catch(err){
-        console.log("Error:", err);
-        res.status(500).json({ message: " Admin Token Needed" });
-    }
-}

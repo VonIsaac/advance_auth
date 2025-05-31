@@ -3,7 +3,12 @@ import Button from '@mui/material/Button';
 import { Link } from "react-router-dom";
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { useState } from "react";
-import { useAuth } from "./store/AuthProvider";
+import { useMutation } from "@tanstack/react-query";
+import { postLogIn, queryClient } from "../utils/http"; // Adjust the import path as necessary
+import { jwtDecode } from "jwt-decode";
+import { useNavigate } from "react-router-dom";
+import Cookies from "js-cookie";
+import { useLocation } from "react-router-dom";
 
 // Create a custom theme with new colors
 const theme = createTheme({
@@ -21,8 +26,44 @@ const theme = createTheme({
 });
 
 const LogIn = () => {
-    const { logInMutation } = useAuth();
+    //const { logInMutation } = useAuth();
     const [isCredentials, setIsCredentials] = useState({ email: "", password: "" });
+    const navigate = useNavigate();
+    //const {token} = useAuth();
+    const location = useLocation();
+
+    const { mutate, isLoading,  } = useMutation({
+        mutationFn: postLogIn,
+        onSuccess: (data) => {
+            const token = data.token;
+            //  to persist the token in cookies and localStorage]
+         
+            // Store token in both cookie and localStorage for redundancy
+            Cookies.set("token", token, { expires: 7 });
+            localStorage.setItem("token", token);
+            //localStorage.setItem("keepLoggedIn", JSON.stringify(true))
+            const decoded = jwtDecode(token);
+            console.log("Decoded Token:", decoded);
+    
+             // Prevent visiting "/" (login page) if the user is authenticated
+
+            if(location.pathname === '/login'){
+                if (decoded.role === 'admin') {
+                    navigate('/admin', { replace: true });
+                } else {
+                    navigate('/page', { replace: true });
+                }
+            }
+            queryClient.invalidateQueries(['get-user']); // Invalidate user data query
+          
+        },
+        onError: (error) => {
+            console.error("Login failed:", error);
+            // You might want to show an error message to the user here
+        }
+    });
+
+  
 
     const handleChange = (e) => {
         setIsCredentials(prev => ({ ...prev, [e.target.name]: e.target.value }));
@@ -30,7 +71,7 @@ const LogIn = () => {
 
     const handleLogin = (e) => {
         e.preventDefault();
-        logInMutation.mutate(isCredentials);
+        mutate(isCredentials);
     };
 
     return (
@@ -89,7 +130,7 @@ const LogIn = () => {
                                     },
                                 }}
                             >
-                                {logInMutation.isPending ? "Logging in..." : "Log In"}
+                                {isLoading ? "Logging in..." : "Log In"}
                             </Button>
                         </div>
                         <p className="tracking-wide text-base/6 text-white">

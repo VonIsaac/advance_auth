@@ -27,7 +27,7 @@ const postSignup = async (data) => {
 }
 
 
-const postLogIn = async (credentials) => {
+/*const postLogIn = async (credentials) => {
     try {
         const response = await API.post("/login", credentials);
         console.log("Login response:", response.data);
@@ -67,15 +67,33 @@ const postLogIn = async (credentials) => {
         
         throw err;
     }
-}
+}*/
 
+const postLogIn = async (credentials) => {
+    try {
+        const response = await API.post('/login', {
+            email: credentials.email,
+            password: credentials.password
+        });
+        console.log("Login response:", response.data);
+
+        const { token } = response.data;
+        // Set cookie
+        //document.cookie = `token=${token}`;
+        localStorage.setItem('token', token); // Store in localStorage for redundancy
+        return response.data;
+    } catch(err) {
+        console.error("Login error:", err);
+        throw err; // Important to throw so mutation onError can catch it
+    }
+}
 // handle to logout credentials and cookie
 const postLogout = async () => {
     try{
         const response = await API.post('/logout')
         console.log(response)
         Cookies.remove('token'); // Remove from client-side (if stored)
-        Cookies.remove('role'); // Remove role cookie
+       
 
     }catch(err){
         console.log(err )
@@ -121,17 +139,33 @@ const newPassword = async ({ password, token }) => { // Accept an object
 };
 
 // gettting the data to both user and admin
- const getAdminAndUser = async () => {
+const getAdminAndUser = async ({ token }) => {
     try {
-      const response = await API.get('/me');
+      const response = await API.get('/me',  {
+        headers: {
+          Authorization: `Bearer ${token}`,
+           
+        },
+      });
       console.log("User data:", response.data);
-      return response.data;
+      return response.data.data; // Extract the 'data' field directly if needed
     } catch (err) {
       console.error("Error fetching user data:", err);
       throw err;
     }
   };
   
+  // getUser by id 
+  const getUser = async (id) => {
+    try{
+        const response = await API.get(`/get-user/${id}`);
+        console.log("User by ID:", response.data);
+        return response.data; // Return the user data
+    }catch(err){
+        console.log(err)
+    }
+  }
+
 
 
 // getting the user data and admin data
@@ -166,5 +200,6 @@ export {
     newPassword,
     fetchAdmin,
     fetchUser,
-    getAdminAndUser
+    getAdminAndUser,
+    getUser
 };
